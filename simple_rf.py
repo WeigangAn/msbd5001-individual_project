@@ -26,17 +26,17 @@ train_data['purchase_date'] = pd.to_datetime(train_data['purchase_date']).apply(
 train_data['release_date'] = pd.to_datetime(train_data['release_date']).apply(lambda x: x.date())
 train_data['diff'] = train_data['purchase_date'] - train_data['release_date']
 train_data.fillna(0, inplace=True)
-train_data['diff'] = train_data['diff'].apply(lambda x: round((x.total_seconds()/3600), 2))
+train_data['diff'] = train_data['diff'].apply(lambda x: x.total_seconds()/86400)
 train_data['rate'] = train_data['total_positive_reviews'] / train_data['total_negative_reviews']
 train_data['rate'] = train_data['rate'].apply(lambda x: 0 if(x == np.inf) else x)
 train_data = train_data.drop(columns=['purchase_date', 'release_date'])
-train_data['genres'] = train_data['genres'].str.split(',')
-train_data['genres'] = train_data['genres'].apply(lambda x: len(x))
-train_data['categories'] = train_data['categories'].str.split(',')
-train_data['categories'] = train_data['categories'].apply(lambda x: len(x))
-train_data['tags'] = train_data['tags'].str.split(',')
-train_data['tags'] = train_data['tags'].apply(lambda x: len(x))
-train_data['tnum'] = train_data['genres']+train_data['categories']+train_data['tags']
+# train_data['genres'] = train_data['genres'].str.split(',')
+# train_data['genres'] = train_data['genres'].apply(lambda x: len(x))
+# train_data['categories'] = train_data['categories'].str.split(',')
+# train_data['categories'] = train_data['categories'].apply(lambda x: len(x))
+# train_data['tags'] = train_data['tags'].str.split(',')
+# train_data['tags'] = train_data['tags'].apply(lambda x: len(x))
+# train_data['tnum'] = train_data['genres']+train_data['categories']+train_data['tags']
 train_data = train_data.drop(columns=['genres','categories', 'tags'])
 mean1 = train_data.mean()
 train_data.fillna(mean1, inplace=True)
@@ -48,17 +48,17 @@ test_data['purchase_date'] = pd.to_datetime(test_data['purchase_date']).apply(la
 test_data['release_date'] = pd.to_datetime(test_data['release_date']).apply(lambda x: x.date())
 test_data['diff'] = test_data['purchase_date'] - test_data['release_date']
 test_data.fillna(0, inplace=True)
-test_data['diff'] = test_data['diff'].apply(lambda x: round((x.total_seconds()/3600),2))
+test_data['diff'] = test_data['diff'].apply(lambda x: x.total_seconds()/86400)
 test_data = test_data.drop(columns=['purchase_date', 'release_date'])
 test_data['rate'] = test_data['total_positive_reviews'] / test_data['total_negative_reviews']
 test_data['rate'] = test_data['rate'].apply(lambda x: 0 if(x == np.inf) else x)
-test_data['genres'] = test_data['genres'].str.split(',')
-test_data['genres'] = test_data['genres'].apply(lambda x: len(x))
-test_data['categories'] = test_data['categories'].str.split(',')
-test_data['categories'] = test_data['categories'].apply(lambda x: len(x))
-test_data['tags'] = test_data['tags'].str.split(',')
-test_data['tags'] = test_data['tags'].apply(lambda x: len(x))
-test_data['tnum'] = test_data['genres']+test_data['categories']+test_data['tags']
+# test_data['genres'] = test_data['genres'].str.split(',')
+# test_data['genres'] = test_data['genres'].apply(lambda x: len(x))
+# test_data['categories'] = test_data['categories'].str.split(',')
+# test_data['categories'] = test_data['categories'].apply(lambda x: len(x))
+# test_data['tags'] = test_data['tags'].str.split(',')
+# test_data['tags'] = test_data['tags'].apply(lambda x: len(x))
+# test_data['tnum'] = test_data['genres']+test_data['categories']+test_data['tags']
 test_data = test_data.drop(columns=['genres', 'categories', 'tags'])
 mean2 = test_data.mean()
 test_data.fillna(mean2, inplace=True)
@@ -71,7 +71,7 @@ x_train = train_data.drop(columns='playtime_forever')
 y_train = train_data['playtime_forever']
 kfold = KFold(n_splits = 5)
 
-rf = RandomForestRegressor(n_estimators = 7, random_state = 0)
+rf = RandomForestRegressor(n_estimators = 5, random_state = 0)
 np.mean(cross_val_score(rf, x_train, y_train, cv=kfold))
 # Train the model on training data
 rf.fit(x_train, y_train)
