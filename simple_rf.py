@@ -38,6 +38,8 @@ train_data.fillna(0, inplace=True)
 train_data['diff'] = train_data['diff'].apply(lambda x: x.total_seconds()/86400)
 train_data['rate'] = train_data['total_positive_reviews'] / train_data['total_negative_reviews']
 train_data['rate'] = train_data['rate'].apply(lambda x: 0 if(x == np.inf) else x)
+train_data['previews_rate'] = train_data['total_positive_reviews'] / (train_data['total_positive_reviews'] + train_data['total_negative_reviews'])
+train_data['nreviews_rate'] = train_data['total_negative_reviews'] / (train_data['total_positive_reviews'] + train_data['total_negative_reviews'])
 train_data = train_data.drop(columns=['purchase_date', 'release_date'])
 train_data = train_data.drop(columns=['genres','categories', 'tags'])
 mean1 = train_data.mean()
@@ -57,6 +59,8 @@ test_data.fillna(0, inplace=True)
 test_data['diff'] = test_data['diff'].apply(lambda x: x.total_seconds()/86400)
 test_data['rate'] = test_data['total_positive_reviews'] / test_data['total_negative_reviews']
 test_data['rate'] = test_data['rate'].apply(lambda x: 0 if(x == np.inf) else x)
+test_data['previews_rate'] = test_data['total_positive_reviews'] / (test_data['total_positive_reviews'] + test_data['total_negative_reviews'])
+test_data['nreviews_rate'] = test_data['total_negative_reviews'] / (test_data['total_positive_reviews'] + test_data['total_negative_reviews'])
 test_data = test_data.drop(columns=['purchase_date', 'release_date'])
 test_data = test_data.drop(columns=['genres', 'categories', 'tags'])
 mean2 = test_data.mean()
@@ -82,7 +86,7 @@ result = pd.DataFrame()
 result['id'] = test_data['id']
 result['playtime_forever'] = predictions
 result['playtime_forever'] = result['playtime_forever'].apply(lambda x : 0 if(x<0) else x)
-#result['playtime_forever'] = result['playtime_forever'].apply(lambda x : round(x))
+
 #print(result.tail(30))
 result.to_csv('submission2.csv', index=False)
 

@@ -13,7 +13,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
-from catboost import CatBoostRegressor
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
@@ -39,6 +38,8 @@ train_data.fillna(0, inplace=True)
 train_data['diff'] = train_data['diff'].apply(lambda x: x.total_seconds()/86400)
 train_data['rate'] = train_data['total_positive_reviews'] / train_data['total_negative_reviews']
 train_data['rate'] = train_data['rate'].apply(lambda x: 0 if(x == np.inf) else x)
+train_data['previews_rate'] = train_data['total_positive_reviews'] / (train_data['total_positive_reviews'] + train_data['total_negative_reviews'])
+train_data['nreviews_rate'] = train_data['total_negative_reviews'] / (train_data['total_positive_reviews'] + train_data['total_negative_reviews'])
 train_data = train_data.drop(columns=['purchase_date', 'release_date'])
 train_data = train_data.drop(columns=['genres','categories', 'tags'])
 mean1 = train_data.mean()
@@ -47,12 +48,14 @@ train_data.fillna(mean1, inplace=True)
 train_data['price'] = train_data['price'].apply(lambda x: (x-train_data['price'].min())/(train_data['price'].max()-train_data['price'].min()))
 train_data['total_positive_reviews'] = train_data['total_positive_reviews'].apply(lambda x: (x-train_data['total_positive_reviews'].min())/(train_data['total_positive_reviews'].max()-train_data['total_positive_reviews'].min()))
 train_data['total_negative_reviews'] = train_data['total_negative_reviews'].apply(lambda x: (x-train_data['total_negative_reviews'].min())/(train_data['total_negative_reviews'].max()-train_data['total_negative_reviews'].min()))
-train_data['diff'] = train_data['diff'].apply(lambda x: (x-train_data['diff'].min())/(train_data['diff'].max()-train_data['diff'].min()))
-train_data['rate'] = train_data['rate'].apply(lambda x: (x-train_data['rate'].min())/(train_data['rate'].max()-train_data['rate'].min()))
-train_data['pmonth'] = train_data['pmonth'].apply(lambda x: (x-train_data['pmonth'].min())/(train_data['pmonth'].max()-train_data['pmonth'].min()))
-train_data['pday'] = train_data['pday'].apply(lambda x: (x-train_data['pday'].min())/(train_data['pday'].max()-train_data['pday'].min()))
-train_data['rmonth'] = train_data['rmonth'].apply(lambda x: (x-train_data['rmonth'].min())/(train_data['rmonth'].max()-train_data['rmonth'].min()))
-train_data['rday'] = train_data['rday'].apply(lambda x: (x-train_data['rday'].min())/(train_data['rday'].max()-train_data['rday'].min()))
+#train_data['diff'] = train_data['diff'].apply(lambda x: (x-train_data['diff'].min())/(train_data['diff'].max()-train_data['diff'].min()))
+#train_data['rate'] = train_data['rate'].apply(lambda x: (x-train_data['rate'].min())/(train_data['rate'].max()-train_data['rate'].min()))
+#train_data['pmonth'] = train_data['pmonth'].apply(lambda x: (x-train_data['pmonth'].min())/(train_data['pmonth'].max()-train_data['pmonth'].min()))
+#train_data['pday'] = train_data['pday'].apply(lambda x: (x-train_data['pday'].min())/(train_data['pday'].max()-train_data['pday'].min()))
+#train_data['rmonth'] = train_data['rmonth'].apply(lambda x: (x-train_data['rmonth'].min())/(train_data['rmonth'].max()-train_data['rmonth'].min()))
+#train_data['rday'] = train_data['rday'].apply(lambda x: (x-train_data['rday'].min())/(train_data['rday'].max()-train_data['rday'].min()))
+#train_data['previews_rate'] = train_data['previews_rate'].apply(lambda x: (x-train_data['previews_rate'].min())/(train_data['previews_rate'].max()-train_data['previews_rate'].min()))
+#train_data['nreviews_rate'] = train_data['nreviews_rate'].apply(lambda x: (x-train_data['nreviews_rate'].min())/(train_data['nreviews_rate'].max()-train_data['nreviews_rate'].min()))
 
 #Same data progressing of testing data
 test_data = test_data.drop(columns=['is_free'])
@@ -68,6 +71,8 @@ test_data['diff'] = test_data['diff'].apply(lambda x: x.total_seconds()/86400)
 test_data = test_data.drop(columns=['purchase_date', 'release_date'])
 test_data['rate'] = test_data['total_positive_reviews'] / test_data['total_negative_reviews']
 test_data['rate'] = test_data['rate'].apply(lambda x: 0 if(x == np.inf) else x)
+test_data['previews_rate'] = test_data['total_positive_reviews'] / (test_data['total_positive_reviews'] + test_data['total_negative_reviews'])
+test_data['nreviews_rate'] = test_data['total_negative_reviews'] / (test_data['total_positive_reviews'] + test_data['total_negative_reviews'])
 test_data = test_data.drop(columns=['genres', 'categories', 'tags'])
 mean2 = test_data.mean()
 test_data.fillna(mean2, inplace=True)
@@ -75,14 +80,14 @@ test_data.fillna(mean2, inplace=True)
 test_data['price'] = test_data['price'].apply(lambda x: (x-test_data['price'].min())/(test_data['price'].max()-test_data['price'].min()))
 test_data['total_positive_reviews'] = test_data['total_positive_reviews'].apply(lambda x: (x-test_data['total_positive_reviews'].min())/(test_data['total_positive_reviews'].max()-test_data['total_positive_reviews'].min()))
 test_data['total_negative_reviews'] = test_data['total_negative_reviews'].apply(lambda x: (x-test_data['total_negative_reviews'].min())/(test_data['total_negative_reviews'].max()-test_data['total_negative_reviews'].min()))
-test_data['diff'] = test_data['diff'].apply(lambda x: (x-test_data['diff'].min())/(test_data['diff'].max()-test_data['diff'].min()))
-test_data['rate'] = test_data['rate'].apply(lambda x: (x-test_data['rate'].min())/(test_data['rate'].max()-test_data['rate'].min()))
-test_data['pmonth'] = test_data['pmonth'].apply(lambda x: (x-test_data['pmonth'].min())/(test_data['pmonth'].max()-test_data['pmonth'].min()))
-test_data['pday'] = test_data['pday'].apply(lambda x: (x-test_data['pday'].min())/(test_data['pday'].max()-test_data['pday'].min()))
-test_data['rmonth'] = test_data['rmonth'].apply(lambda x: (x-test_data['rmonth'].min())/(test_data['rmonth'].max()-test_data['rmonth'].min()))
-test_data['rday'] = test_data['rday'].apply(lambda x: (x-test_data['rday'].min())/(test_data['rday'].max()-test_data['rday'].min()))
-
-
+#test_data['diff'] = test_data['diff'].apply(lambda x: (x-test_data['diff'].min())/(test_data['diff'].max()-test_data['diff'].min()))
+#test_data['rate'] = test_data['rate'].apply(lambda x: (x-test_data['rate'].min())/(test_data['rate'].max()-test_data['rate'].min()))
+#test_data['pmonth'] = test_data['pmonth'].apply(lambda x: (x-test_data['pmonth'].min())/(test_data['pmonth'].max()-test_data['pmonth'].min()))
+#test_data['pday'] = test_data['pday'].apply(lambda x: (x-test_data['pday'].min())/(test_data['pday'].max()-test_data['pday'].min()))
+#test_data['rmonth'] = test_data['rmonth'].apply(lambda x: (x-test_data['rmonth'].min())/(test_data['rmonth'].max()-test_data['rmonth'].min()))
+#test_data['rday'] = test_data['rday'].apply(lambda x: (x-test_data['rday'].min())/(test_data['rday'].max()-test_data['rday'].min()))
+#test_data['previews_rate'] = test_data['previews_rate'].apply(lambda x: (x-test_data['previews_rate'].min())/(test_data['previews_rate'].max()-test_data['previews_rate'].min()))
+#test_data['nreviews_rate'] = test_data['nreviews_rate'].apply(lambda x: (x-test_data['nreviews_rate'].min())/(test_data['nreviews_rate'].max()-test_data['nreviews_rate'].min()))
 print(train_data.info())
 #train_data.to_csv('sl.csv', index=False)
 
